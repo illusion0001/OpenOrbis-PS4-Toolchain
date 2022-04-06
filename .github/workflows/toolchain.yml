@@ -1,14 +1,7 @@
 name: Toolchain
 
 # Controls when the workflow will run
-on:
-  # Triggers the workflow on push or pull request events but only for the master branch
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  
-  workflow_dispatch:
+on: [ push, pull_request, workflow_dispatch ]
 
 jobs:
   build:
@@ -17,13 +10,19 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - name: Install dependencies
         run: sudo apt-get install -y lld llvm
       
       - name: Set environment variables
-        run: echo "OO_PS4_TOOLCHAIN=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+        run: |
+          ver=1.`git rev-list HEAD --count`
+          echo commit_val=0.0.$ver >> $GITHUB_ENV
+          echo "OO_PS4_TOOLCHAIN=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       # Get latest musl
       - name: Fetch musl stable
@@ -191,7 +190,7 @@ jobs:
           
       # Upload artifact
       - name: Upload toolchain
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: toolchain.tar.gz
           path: toolchain.tar.gz
@@ -234,7 +233,10 @@ jobs:
           
       # Upload artifact
       - name: Upload samples
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: sample-packages
           path: samples.zip
+
+      - name: Create release
+        run: gh release create $commit_val toolchain.tar.gz --target $SHORT_SHA -t $commit_val
