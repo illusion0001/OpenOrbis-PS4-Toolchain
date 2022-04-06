@@ -239,4 +239,6 @@ jobs:
           path: samples.zip
 
       - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release create $commit_val toolchain.tar.gz --target $SHORT_SHA -t $commit_val
