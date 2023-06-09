@@ -18,12 +18,17 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set environment variables
         run: | 
           echo "OO_PS4_TOOLCHAIN=$GITHUB_WORKSPACE" >> $GITHUB_ENV
           echo llvm_ver=12.0 >> $GITHUB_ENV
           echo "llvm_path=$RUNNER_TOOL_CACHE/llvm" >> $GITHUB_ENV
+          ver=1.`git rev-list HEAD --count`
+          echo commit_val=0.0.$ver >> $GITHUB_ENV
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: Cache LLVM and Clang (${{ env.llvm_ver }})
         id: cache-llvm
@@ -98,3 +103,8 @@ jobs:
         with:
           name: samples
           path: samples/**/*.pkg
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create $commit_val toolchain.tar.gz --target ${{ GITHUB.SHA }} -t $commit_val
