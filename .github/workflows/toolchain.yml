@@ -171,10 +171,6 @@ jobs:
       - name: Create toolchain tarball
         run: tar -czf toolchain-llvm-${{ env.llvm_ver }}.tar.gz --transform 's,^,OpenOrbis/PS4Toolchain/,' *
 
-      - name: Build samples
-        working-directory: samples
-        run: bash ./build-all.sh
-
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
