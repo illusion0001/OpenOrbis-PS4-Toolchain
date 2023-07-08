@@ -16,12 +16,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        llvm: [ '10', '11', '12', '13', '14', '15', '16' ]
+        llvm: [ '14' ]
     runs-on: ubuntu-latest
     steps:
 
       - name: Checkout OOSDK
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Checkout musl
         uses: actions/checkout@v3
@@ -192,3 +194,8 @@ jobs:
             samples/**/*.so
             src/**/*.elf
             src/**/*.so
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create $commit_val toolchain.tar.gz --target ${{ GITHUB.SHA }} -t $commit_val
