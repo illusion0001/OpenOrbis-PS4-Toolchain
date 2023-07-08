@@ -169,7 +169,7 @@ jobs:
         run: bash build-and-copy.sh
 
       - name: Create toolchain tarball
-        run: tar -czf toolchain-llvm-${{ env.llvm_ver }}.tar.gz --transform 's,^,OpenOrbis/PS4Toolchain/,' *
+        run: tar -czf toolchain.tar.gz --transform 's,^,OpenOrbis/PS4Toolchain/,' *
 
       - name: Create release
         env:
