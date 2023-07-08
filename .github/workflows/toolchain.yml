@@ -57,6 +57,9 @@ jobs:
           echo "llvm_path=${{ runner.tool_cache }}/llvm" >> $GITHUB_ENV
           # llvm 13 fix for ci
           sudo apt install libncurses5
+          ver=1.`git rev-list HEAD --count`
+          echo commit_val=0.0.$ver >> $GITHUB_ENV
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: Cache LLVM and Clang (${{ env.llvm_ver }})
         id: cache-llvm
