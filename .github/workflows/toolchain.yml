@@ -175,29 +175,6 @@ jobs:
         working-directory: samples
         run: bash ./build-all.sh
 
-      - name: Upload toolchain
-        uses: actions/upload-artifact@v3
-        with:
-          name: toolchain-llvm-${{ env.llvm_ver }}
-          path: toolchain-llvm-${{ env.llvm_ver }}.tar.gz
-          if-no-files-found: error
-
-      - name: Upload samples packages
-        uses: actions/upload-artifact@v3
-        with:
-          name: samples-pkg-llvm-${{ env.llvm_ver }}
-          path: samples/**/*.pkg
-
-      - name: Upload samples binaries
-        uses: actions/upload-artifact@v3
-        with:
-          name: samples-elf-llvm-${{ env.llvm_ver }}
-          path: |
-            samples/**/*.elf
-            samples/**/*.so
-            src/**/*.elf
-            src/**/*.so
-
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
