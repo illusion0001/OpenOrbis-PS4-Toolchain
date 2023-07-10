@@ -2,10 +2,12 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h> // atexit()
 
 #include <orbis/CommonDialog.h>
 #include <orbis/MsgDialog.h>
 #include <orbis/Sysmodule.h>
+#include <orbis/SystemService.h>
 
 // Dialog types
 #define MDIALOG_OK       0
@@ -67,6 +69,14 @@ int show_dialog(int dialog_type, const char * format, ...)
     return (result.buttonId == ORBIS_MSG_DIALOG_BUTTON_ID_YES);
 }
 
+int sysctlbyname(const char *name, void *oldp, size_t *oldlenp, const void *newp, size_t newlen);
+
+void on_exit(void)
+{
+    puts(__PRETTY_FUNCTION__);
+    sceSystemServiceLoadExec("exit", NULL);
+}
+
 int main()
 {
     // Load the Message Dialog module
@@ -74,18 +84,13 @@ int main()
         sceCommonDialogInitialize() < 0)
     {
         printf("Failed to initialize CommonDialog\n");
-        for(;;);
+        return 0;
     }
-
-    // Show a message dialog
-    if (show_dialog(MDIALOG_YESNO, "Do you like %s?", "OpenOrbis"))
-    {
-        show_dialog(MDIALOG_OK, "User likes %s :)", "OpenOrbis");
-    }
-    else
-    {
-        show_dialog(MDIALOG_OK, "User doesn't like %s :(", "OpenOrbis");
-    }
-
-    for(;;);
+    printf("atexit: 0x%08x\n", atexit(on_exit));
+    int64_t tsc = 0;
+    size_t len = 8;
+    sysctlbyname("machdep.tsc_freq", &tsc, &len, NULL, 0);
+    show_dialog(MDIALOG_OK, "machdep.tsc_freq: (%li) 0x%lx", tsc, tsc);
+    printf("machdep.tsc_freq: (%li) 0x%lx\n", tsc, tsc);
+    return 0;
 }
