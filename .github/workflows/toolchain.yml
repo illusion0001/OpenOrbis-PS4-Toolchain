@@ -16,12 +16,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        llvm: [ '10', '11', '12', '13', '14', '15', '16' ]
+        llvm: [ '14' ]
     runs-on: ubuntu-latest
     steps:
 
       - name: Checkout OOSDK
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Checkout musl
         uses: actions/checkout@v3
@@ -55,6 +57,9 @@ jobs:
           echo "llvm_path=${{ runner.tool_cache }}/llvm" >> $GITHUB_ENV
           # llvm 13 fix for ci
           sudo apt install libncurses5
+          ver=1.`git rev-list HEAD --count`
+          echo commit_val=0.0.$ver >> $GITHUB_ENV
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: Cache LLVM and Clang (${{ env.llvm_ver }})
         id: cache-llvm
@@ -164,31 +169,9 @@ jobs:
         run: bash build-and-copy.sh
 
       - name: Create toolchain tarball
-        run: tar -czf toolchain-llvm-${{ env.llvm_ver }}.tar.gz --transform 's,^,OpenOrbis/PS4Toolchain/,' *
+        run: tar -czf toolchain.tar.gz --transform 's,^,OpenOrbis/PS4Toolchain/,' *
 
-      - name: Build samples
-        working-directory: samples
-        run: bash ./build-all.sh
-
-      - name: Upload toolchain
-        uses: actions/upload-artifact@v3
-        with:
-          name: toolchain-llvm-${{ env.llvm_ver }}
-          path: toolchain-llvm-${{ env.llvm_ver }}.tar.gz
-          if-no-files-found: error
-
-      - name: Upload samples packages
-        uses: actions/upload-artifact@v3
-        with:
-          name: samples-pkg-llvm-${{ env.llvm_ver }}
-          path: samples/**/*.pkg
-
-      - name: Upload samples binaries
-        uses: actions/upload-artifact@v3
-        with:
-          name: samples-elf-llvm-${{ env.llvm_ver }}
-          path: |
-            samples/**/*.elf
-            samples/**/*.so
-            src/**/*.elf
-            src/**/*.so
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create $commit_val toolchain.tar.gz --target ${{ GITHUB.SHA }} -t $commit_val
