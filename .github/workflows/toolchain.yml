@@ -10,20 +10,20 @@ on:
       - "**/*.md"
       - '**/*.txt'
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 1 1-12 *' # rebuild once every month
 
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
-        llvm: [ '10', '11', '12', '13', '14', '15', '16', '17', '18' ]
-    runs-on: ubuntu-22.04
+        llvm: [ 18 ] # [ '10', '11', '12', '13', '14', '15', '16', '17', '18' ]
+    runs-on: ubuntu-latest
     steps:
 
       - name: Checkout OOSDK
         uses: actions/checkout@main
+        with:
+          fetch-depth: 0
 
       - name: Checkout musl
         uses: actions/checkout@main
@@ -57,6 +57,9 @@ jobs:
           echo "llvm_path=${{ runner.tool_cache }}/llvm" >> $GITHUB_ENV
           # llvm 13 fix for ci
           sudo apt install libncurses5
+          ver=1.`git rev-list HEAD --count`
+          echo commit_val=0.0.$ver >> $GITHUB_ENV
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: Cache LLVM and Clang (${{ env.llvm_ver }})
         id: cache-llvm
@@ -167,7 +170,7 @@ jobs:
         run: bash build-and-copy.sh
 
       - name: Create toolchain tarball
-        run: tar -czf toolchain-llvm-${{ env.llvm_ver }}.tar.gz --transform 's,^,OpenOrbis/PS4Toolchain/,' *
+        run: tar -czf toolchain.tar.gz --transform 's,^,OpenOrbis/PS4Toolchain/,' *
 
       - name: Build samples
         working-directory: samples
@@ -195,3 +198,8 @@ jobs:
             samples/**/*.so
             src/**/*.elf
             src/**/*.so
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create $commit_val toolchain.tar.gz --target ${{ GITHUB.SHA }} -t $commit_val
