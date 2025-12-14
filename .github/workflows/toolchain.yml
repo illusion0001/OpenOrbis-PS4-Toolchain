@@ -43,9 +43,10 @@ jobs:
           # https://forum.aspose.com/t/no-usable-version-of-libssl-was-found/293124/2
           wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb \
           && sudo dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
-          ver=1.`git rev-list HEAD --count`
+          SHORT_SHA=${GITHUB_SHA::7}
+          ver="1.`git rev-list HEAD --count`-$SHORT_SHA"
           echo commit_val=0.0.$ver >> $GITHUB_ENV
-          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
 
       - name: Checkout musl
         uses: actions/checkout@main
