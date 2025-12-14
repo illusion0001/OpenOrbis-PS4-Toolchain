@@ -200,7 +200,7 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
       - name: Create release
-        run: gh release create $commit_val toolchain.tar.gz --target ${{ GITHUB.SHA }} -t $commit_val
+        run: gh release create "${{ env.commit_val }}" toolchain.tar.gz --target "${{ GITHUB.SHA }}" -t "${{ env.commit_val }}"
 
       - name: Delete Artifacts
         run: |
