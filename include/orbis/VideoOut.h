@@ -67,7 +67,7 @@ void sceVideoOutDriverIncrementBufferLabel();
 void sceVideoOutDriverResetBufferLabel();
 void sceVideoOutDriverTriggerEvent();
 void sceVideoOutGetBufferInformation();
-void sceVideoOutGetBufferLabelAddress();
+int32_t sceVideoOutGetBufferLabelAddress(int32_t, void**);
 void sceVideoOutGetCoredumpOutputMode();
 void sceVideoOutGetCurrentOutputMode_();
 void sceVideoOutGetDeviceCapabilityInfo_();
